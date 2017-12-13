@@ -1,5 +1,8 @@
 const Request = require('../lib/request')
 const assert = require('assert')
+// const express = require('express')
+
+// const app = express()
 
 describe('Request', function () {
   describe('测试params', function () {
@@ -35,23 +38,33 @@ describe('Request', function () {
     describe('GET请求', function () {
       it('url 不能为空', function () {
         const req1 = new Request()
-        const req2 = new Request('abc')
+        const req2 = new Request('aaaa')
 
         assert.throws(req1.get, Error, 'Error thrown')
         assert.throws(req2.get, Error, 'Error thrown')
       })
+      describe('hooked', function () {
+        let server 
+        // before(function () {
+        //   server = app.get('/', function (req, res) {
+        //     console.log('BEFORE req.header')
+        //     res.send('I am ok')
+        //   })
+        //   app.listen(3000)
+        // })
+        describe('可以发送请求', function () {
+          it('retcode 为 0, 正常取得数据', function (done) {
+            const req = new Request('http://127.0.0.1:3000')
 
-      describe('可以发送请求', function () {
-        it('retcode 为 0, 正常取得数据', function (done) {
-          const req = new Request('http://127.0.0.1:3000')
-
-          req.get().then(res => {
-            console.log('asdfadssss')
-            console.log(res)
-            done()
+            req.get().then(res => {
+              console.log('asdfadssss')
+              console.log(res)
+              done()
+            })
           })
         })
       })
+      
     })
   })
 })
