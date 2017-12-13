@@ -32,6 +32,26 @@ describe('Request', function () {
   })
 
   describe('可以定制请求', function () {
-    
+    describe('GET请求', function () {
+      it('url 不能为空', function () {
+        const req1 = new Request()
+        const req2 = new Request('abc')
+
+        assert.throws(req1.get, Error, 'Error thrown')
+        assert.throws(req2.get, Error, 'Error thrown')
+      })
+
+      describe('可以发送请求', function () {
+        it('retcode 为 0, 正常取得数据', function (done) {
+          const req = new Request('http://127.0.0.1:3000')
+
+          req.get().then(res => {
+            console.log('asdfadssss')
+            console.log(res)
+            done()
+          })
+        })
+      })
+    })
   })
 })
