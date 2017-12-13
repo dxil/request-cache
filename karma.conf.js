@@ -59,12 +59,12 @@ module.exports = function (config) {
     },
 
     // middleware: ['mock'],
-    plugins: [
-      // require('./test/mock/middleware'),
-      require('karma-mocha'),
-      require('karma-webpack'),
-      require('karma-chrome-launcher')
-    ],
+    // plugins: [
+    //   // require('./test/mock/middleware'),
+    //   require('karma-mocha'),
+    //   require('karma-webpack'),
+    //   require('karma-chrome-launcher')
+    // ],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

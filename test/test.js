@@ -1,8 +1,8 @@
 const Request = require('../lib/request')
 const assert = require('assert')
-// const express = require('express')
-
-// const app = express()
+const HTTP = require('http')
+const server = require('../mock-server').server
+const app = require('../mock-server').app
 
 describe('Request', function () {
   describe('测试params', function () {
@@ -44,24 +44,48 @@ describe('Request', function () {
         assert.throws(req2.get, Error, 'Error thrown')
       })
       describe('hooked', function () {
-        let server 
-        // before(function () {
-        //   server = app.get('/', function (req, res) {
-        //     console.log('BEFORE req.header')
-        //     res.send('I am ok')
-        //   })
-        //   app.listen(3000)
-        // })
-        describe('可以发送请求', function () {
-          it('retcode 为 0, 正常取得数据', function (done) {
-            const req = new Request('http://127.0.0.1:3000')
+        before(function () {
+          app.get('/', function (req, res) {
+            console.log('BEFORE req.header')
+            res.send('I am ok')
+          })
+        })
 
-            req.get().then(res => {
-              console.log('asdfadssss')
-              console.log(res)
+        describe('可以自定义 GET 请求', function (done) {
+          it('retcode 为 0, 请求成功', function (done) {
+            class AA extends Request {
+              constructor (options) {
+                super()
+                this.options = options
+                console.log(`this.options:${this.options.url}`)
+                this.plugin('get', () => {
+                  return new Promise((resolve, reject) => {
+                    const req = HTTP.request(this.options, (resp) => {
+                      resp.on('data', (chunk) => {
+                        console.log(chunk.toString('utf8'))
+                        resolve(chunk.toString('utf8'))
+                      })
+                    })
+                    req.on('error', (e) => {
+                      console.log(e)
+                      reject(e)
+                    })
+                    req.end()
+                  })
+                })
+              }
+            }
+
+            const aa = new AA({url: 'localhost', post: 3000})
+            aa.get().then(res => {
+              console.log(`aaaaa:${res}`)
               done()
             })
           })
+        })
+        
+        after(function() {
+          server.close()
         })
       })
       
