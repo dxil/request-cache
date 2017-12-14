@@ -46,29 +46,26 @@ describe('Request', function () {
       describe('hooked', function () {
         before(function () {
           app.get('/', function (req, res) {
-            console.log('BEFORE req.header')
-            res.send('I am ok')
+            res.json({
+              retcode: 0,
+              msg: 'OK',
+              res: 'this is a test'
+            })
           })
         })
 
         describe('可以自定义 GET 请求', function (done) {
           it('retcode 为 0, 请求成功', function (done) {
             class AA extends Request {
-              constructor (options) {
-                super()
-                this.options = options
-                console.log(`this.options:${this.options.url}`)
+              constructor (url, options) {
+                super(url, options)
                 this.plugin('get', () => {
                   return new Promise((resolve, reject) => {
+                    console.log(this.options)
                     const req = HTTP.request(this.options, (resp) => {
                       resp.on('data', (chunk) => {
-                        console.log(chunk.toString('utf8'))
-                        resolve(chunk.toString('utf8'))
+                        resolve(chunk)
                       })
-                    })
-                    req.on('error', (e) => {
-                      console.log(e)
-                      reject(e)
                     })
                     req.end()
                   })
@@ -76,9 +73,15 @@ describe('Request', function () {
               }
             }
 
-            const aa = new AA({url: 'localhost', post: 3000})
+            const aa = new AA('localhost', {port: 4050})
             aa.get().then(res => {
               console.log(`aaaaa:${res}`)
+              const jsonResult = JSON.parse(res.toString('utf8'))
+              assert.deepEqual(jsonResult, {
+                retcode: 0,
+                msg: 'OK',
+                res: 'this is a test'
+              })
               done()
             })
           })
