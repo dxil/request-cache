@@ -1,8 +1,6 @@
 const Request = require('../lib/request')
 const assert = require('assert')
 const HTTP = require('http')
-const server = require('../mock-server').server
-const app = require('../mock-server').app
 
 describe('Request', function () {
   describe('测试params', function () {
@@ -44,15 +42,15 @@ describe('Request', function () {
         assert.throws(req2.get, Error, 'Error thrown')
       })
       describe('hooked', function () {
-        before(function () {
-          app.get('/', function (req, res) {
-            res.json({
-              retcode: 0,
-              msg: 'OK',
-              res: 'this is a test'
-            })
-          })
-        })
+        // before(function () {
+        //   app.get('/', function (req, res) {
+        //     res.json({
+        //       retcode: 0,
+        //       msg: 'OK',
+        //       res: 'this is a test'
+        //     })
+        //   })
+        // })
 
         describe('可以自定义 GET 请求', function (done) {
           it('retcode 为 0, 请求成功', function (done) {
@@ -73,7 +71,7 @@ describe('Request', function () {
               }
             }
 
-            const aa = new AA('localhost', {port: 4050})
+            const aa = new AA('localhost', {path: '/root'})
             aa.get().then(res => {
               console.log(`aaaaa:${res}`)
               const jsonResult = JSON.parse(res.toString('utf8'))
@@ -87,9 +85,9 @@ describe('Request', function () {
           })
         })
         
-        after(function() {
-          server.close()
-        })
+        // after(function() {
+        //   server.close()
+        // })
       })
       
     })
