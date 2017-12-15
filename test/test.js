@@ -85,11 +85,11 @@ describe('Request', function () {
           })
         });
 
-        describe('localStorage 缓存: ', function () {
-          it('1. 默认缓存策略: 如果没缓存，成功请求回调一次，如果有缓存,请求成功缓存应当回调两次，', function (done) {
-
-          })
-        });
+        // describe('localStorage 缓存: ', function () {
+        //   it('1. 默认缓存策略: 如果没缓存，成功请求回调一次，如果有缓存,请求成功缓存应当回调两次，', function (done) {
+        //
+        //   })
+        // });
         
         // after(function() {
         //   server.close()
