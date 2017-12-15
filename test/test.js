@@ -62,7 +62,8 @@ describe('Request', function () {
                     console.log(this.options);
                     const req = HTTP.request(this.options, (resp) => {
                       resp.on('data', (chunk) => {
-                        resolve(chunk)
+                        resolve(JSON.parse(chunk.toString('utf8')))
+                        console.log('res:',JSON.parse(chunk.toString('utf8')))
                       })
                     });
                     req.end()
@@ -73,9 +74,7 @@ describe('Request', function () {
 
             const aa = new AA('localhost', {path: '/root'});
             aa.get().then(res => {
-              console.log(`aaaaa:${res}`);
-              const jsonResult = JSON.parse(res.toString('utf8'));
-              assert.deepEqual(jsonResult, {
+              assert.deepEqual(res, {
                 retcode: 0,
                 msg: 'OK',
                 res: 'this is a test'
