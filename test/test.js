@@ -57,23 +57,23 @@ describe('Request', function () {
             class AA extends Request {
               constructor (url, options) {
                 super(url, options);
-                this.plugin('get', () => {
-                  return new Promise((resolve, reject) => {
-                    console.log(this.options);
-                    const req = HTTP.request(this.options, (resp) => {
-                      resp.on('data', (chunk) => {
-                        resolve(JSON.parse(chunk.toString('utf8')))
-                        console.log('res:',JSON.parse(chunk.toString('utf8')))
-                      })
-                    });
-                    req.end()
-                  })
+                this.plugin('get', (options) => {
+                  console.log(this.options);
+                  const req = HTTP.request(this.options, (resp) => {
+                    resp.on('data', (chunk) => {
+                      this.resolve(JSON.parse(chunk.toString('utf8')))
+                      console.log('res:',JSON.parse(chunk.toString('utf8')))
+                    })
+                  });
+                  req.end()
                 })
               }
             }
 
-            const aa = new AA('localhost', {path: '/root'});
-            aa.get().then(res => {
+            const aaHasCache = new AA('localhost', {path: '/root'});
+            aaHasCache.get().done(res => {
+              console.log('done ONE:', res)
+              window.localStorage.setItem('/root'.replace('/', ''), res.res)
               assert.deepEqual(res, {
                 retcode: 0,
                 msg: 'OK',

@@ -4,6 +4,7 @@ function mockFactor (config) {
   return function (req, res, next) {
     if (req.url.indexOf(mockUrl) === 0) {
       const path = req.url.slice(mockUrl.length);
+      console.log('req.method:',req.method)
       try {
         const processor = require(`./${path}`);
         processor(req, res)
