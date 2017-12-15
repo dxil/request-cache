@@ -1,11 +1,11 @@
 function mockFactor (config) {
-  console.log(`config:${config.mockUriStart}`)
-  const mockUrl = config.mockUriStart || '/'
+  console.log(`config:${config.mockUriStart}`);
+  const mockUrl = config.mockUriStart || '/';
   return function (req, res, next) {
     if (req.url.indexOf(mockUrl) === 0) {
-      const path = req.url.slice(mockUrl.length)
+      const path = req.url.slice(mockUrl.length);
       try {
-        const processor = require(`./${path}`)
+        const processor = require(`./${path}`);
         processor(req, res)
       }catch (e) {
         next()
@@ -18,4 +18,4 @@ function mockFactor (config) {
 
 module.exports = {
   'middleware:mock': ['factory', mockFactor]
-}
+};
