@@ -58,9 +58,12 @@ describe('Request', function () {
               constructor (url, options) {
                 super(url, options);
                 this.plugin('get', (options) => {
+                  console.log('this.plugin.get=======')
                   console.log(this.options);
+                  console.log(options);
                   const req = HTTP.request(this.options, (resp) => {
                     resp.on('data', (chunk) => {
+                      console.log('resp.on(=======)')
                       this.resolve(JSON.parse(chunk.toString('utf8')))
                       console.log('res:',JSON.parse(chunk.toString('utf8')))
                     })
