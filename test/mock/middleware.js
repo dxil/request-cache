@@ -1,3 +1,5 @@
+var url = require('url')
+
 function mockFactor (config) {
   console.log(`config:${config.mockUriStart}`);
   const mockUrl = config.mockUriStart || '/';
