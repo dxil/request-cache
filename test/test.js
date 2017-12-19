@@ -57,11 +57,14 @@ describe('Request', function () {
             class AA extends Request {
               constructor (url, options) {
                 super(url, options);
-                this.plugin('get', (options) => {
+                this.plugin('get', () => {
                   console.log('this.plugin.get=======')
                   console.log(this.options);
-                  console.log(options);
-                  const req = HTTP.request(this.options, (resp) => {
+                  const options = {
+                    url: this.options.url,
+                    path: `${this.options.pathname}?${this.options.query}`
+                  }
+                  const req = HTTP.request(options, (resp) => {
                     resp.on('data', (chunk) => {
                       console.log('resp.on(=======)')
                       this.resolve(JSON.parse(chunk.toString('utf8')))
@@ -73,17 +76,30 @@ describe('Request', function () {
               }
             }
 
-            const aaHasCache = new AA('localhost', {path: '/root'});
-            aaHasCache.get().done(res => {
-              console.log('done ONE:', res)
-              window.localStorage.setItem('/root'.replace('/', ''), res.res)
-              assert.deepEqual(res, {
-                retcode: 0,
-                msg: 'OK',
-                res: 'this is a test'
-              });
-              done()
-            })
+            const aa = new AA('localhost', {pathname: '/root', query: 'id=1'});
+            aa
+              .get()
+              .done(res => {
+                console.log('done ONE:', res)
+                window.localStorage.setItem('/root'.replace('/', ''), res.res)
+                assert.deepEqual(res, {
+                  retcode: 0,
+                  msg: 'OK',
+                  res: 'root1 resp'
+                });
+                done()
+              })
+
+            // const aaHasCache = new AA('localhost', {pathname: '/root', query: 'id=2'})
+            // aaHasCache.get().done(res => {
+            //   console.log('done Two:', res)
+            //   window.localStorage.setItem('/root'.replace('/', ''), res.res)
+            //   console.log('res22222:', res)
+            //   if (time === 2) {
+            //     console.log('res333:', res)
+            //     done()
+            //   }
+            // })
           })
         });
 
