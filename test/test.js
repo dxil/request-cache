@@ -41,47 +41,42 @@ describe('Request', function () {
         assert.throws(req1.get, Error, 'Error thrown');
         assert.throws(req2.get, Error, 'Error thrown')
       });
-      describe('hooked', function () {
-        // before(function () {
-        //   app.get('/', function (req, res) {
-        //     res.json({
-        //       retcode: 0,
-        //       msg: 'OK',
-        //       res: 'this is a test'
-        //     })
-        //   })
-        // })
+      it('缓存策略不能同时为 lazy 和 maxAge', function () {
+        const req = new Request('localhost', { path: '/root', maxAge: 10000, lazy: true })
+        assert.throws(req.get, Error, 'lazy and maxAge cannot be defined at the same time')
+      })
 
-        describe('可以自定义 GET 请求', function () {
-          it('retcode 为 0, 请求成功', function (done) {
-            class AA extends Request {
-              constructor (url, options) {
-                super(url, options);
-                this.plugin('get', () => {
-                  console.log('this.plugin.get=======')
-                  console.log(this.options);
-                  const options = {
-                    url: this.options.url,
-                    path: `${this.options.pathname}?${this.options.query}`
-                  }
-                  const req = HTTP.request(options, (resp) => {
-                    resp.on('data', (chunk) => {
-                      console.log('resp.on(=======)')
-                      this.resolve(JSON.parse(chunk.toString('utf8')))
-                      console.log('res:',JSON.parse(chunk.toString('utf8')))
-                    })
-                  });
-                  req.end()
-                })
-              }
+      describe('可以自定义 GET 请求', function () {
+        describe('1.默认缓存策略:', function () {
+          class AA extends Request {
+            constructor (url, options) {
+              super(url, options);
+              this.plugin('get', () => {
+                console.log('this.plugin.get=======')
+                console.log(this.options);
+                const options = {
+                  url: this.options.url,
+                  path: `${this.options.pathname}?${this.options.query}`
+                }
+                const req = HTTP.request(options, (resp) => {
+                  resp.on('data', (chunk) => {
+                    let res = JSON.parse(chunk.toString('utf8'))
+                    console.log('resp.on(=======)', res)
+                    window.localStorage.setItem('root', res.res)
+                    this.resolve(res)
+                    console.log('res:',res)
+                  })
+                });
+                req.end()
+              })
             }
-
+          }
+          it('a. 如果没缓存， 成功请求回调一次；', function (done) {
             const aa = new AA('localhost', {pathname: '/root', query: 'id=1'});
             aa
               .get()
               .done(res => {
                 console.log('done ONE:', res)
-                window.localStorage.setItem('/root'.replace('/', ''), res.res)
                 assert.deepEqual(res, {
                   retcode: 0,
                   msg: 'OK',
@@ -89,31 +84,32 @@ describe('Request', function () {
                 });
                 done()
               })
-
-            // const aaHasCache = new AA('localhost', {pathname: '/root', query: 'id=2'})
-            // aaHasCache.get().done(res => {
-            //   console.log('done Two:', res)
-            //   window.localStorage.setItem('/root'.replace('/', ''), res.res)
-            //   console.log('res22222:', res)
-            //   if (time === 2) {
-            //     console.log('res333:', res)
-            //     done()
-            //   }
-            // })
           })
-        });
+          it('b. 如果有缓存， 请求成功缓存应该回调两次', function (done) {
+            let times = 0
+            const aaHasCache = new AA('localhost', {pathname: '/root', query: 'id=2'})
+            aaHasCache
+              .get()
+              .done(res => {
+                times++
+                if (times === 1) {
+                  console.log('done 1:', res)
+                  assert.deepEqual(res, 'root1 resp')
+                }
 
-        // describe('localStorage 缓存: ', function () {
-        //   it('1. 默认缓存策略: 如果没缓存，成功请求回调一次，如果有缓存,请求成功缓存应当回调两次，', function (done) {
-        //
-        //   })
-        // });
-        
-        // after(function() {
-        //   server.close()
-        // })
-      })
-      
+                if (times === 2) {
+                  console.log('done 2:', res)
+                  assert.deepEqual(res, {
+                    retcode: 0,
+                    msg: 'OK',
+                    res: 'root2 should be updated'
+                  });
+                  done()
+                }
+              })
+          })
+        })
+      });
     })
   })
 });
