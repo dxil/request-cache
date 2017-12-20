@@ -104,8 +104,53 @@ describe('Request', function () {
                     msg: 'OK',
                     res: 'root2 should be updated'
                   });
+                  window.localStorage.clear()
                   done()
                 }
+              })
+          })
+        })
+        describe('2.lazy 缓存策略: 有缓存的话直接读取缓存，只有一次回调，但是会发起请求', function () {
+          class BB extends Request {
+            constructor (url, options) {
+              super(url, options);
+              this.plugin('get', () => {
+                console.log('this.plugin.get=======')
+                console.log(this.options);
+                const options = {
+                  url: this.options.url,
+                  path: `${this.options.pathname}?${this.options.query}`
+                }
+                const req = HTTP.request(options, (resp) => {
+                  resp.on('data', (chunk) => {
+                    let res = JSON.parse(chunk.toString('utf8'))
+                    console.log('resp.on(=======)', res)
+                    window.localStorage.setItem('root', res.res)
+                    console.log('res:',res)
+                  })
+                });
+                req.end()
+              })
+            }
+          }
+          it('a.第一次请求，没有缓存应该为Null，但是请求仍然发出', function (done) {
+            const aa = new BB('localhost', {pathname: '/root', query: 'id=1'})
+            aa
+              .get({lazy: true})
+              .done(res => {
+                console.log('aa lazy res:', res)
+                assert.equal(res, null)
+                done()
+              })
+          })
+          it('b.第二次请求有缓存，因此返回的数据是第一次发出，但未接收的数据', function (done) {
+            const aaHasCache = new BB('localhost', {pathname: '/root', query: 'id=2'})
+            aaHasCache
+              .get({lazy: true})
+              .done(res => {
+                console.log('aaHasCache lazy res:', res)
+                assert.equal(res, 'root1 resp')
+                done()
               })
           })
         })
