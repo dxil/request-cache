@@ -52,8 +52,6 @@ describe('Request', function () {
             constructor (url, options) {
               super(url, options);
               this.plugin('get', () => {
-                console.log('this.plugin.get=======')
-                console.log(this.options);
                 const options = {
                   url: this.options.url,
                   path: `${this.options.pathname}?${this.options.query}`
@@ -61,10 +59,11 @@ describe('Request', function () {
                 const req = HTTP.request(options, (resp) => {
                   resp.on('data', (chunk) => {
                     let res = JSON.parse(chunk.toString('utf8'))
-                    console.log('resp.on(=======)', res)
-                    window.localStorage.setItem('root', res.res)
+                    window.localStorage.setItem('root', JSON.stringify({
+                      'timestamp': Date.now(),
+                      'res': res.res
+                    }))
                     this.resolve(res)
-                    console.log('res:',res)
                   })
                 });
                 req.end()
@@ -76,7 +75,6 @@ describe('Request', function () {
             aa
               .get()
               .done(res => {
-                console.log('done ONE:', res)
                 assert.deepEqual(res, {
                   retcode: 0,
                   msg: 'OK',
@@ -93,12 +91,10 @@ describe('Request', function () {
               .done(res => {
                 times++
                 if (times === 1) {
-                  console.log('done 1:', res)
-                  assert.deepEqual(res, 'root1 resp')
+                  assert.equal(res.res, 'root1 resp')
                 }
 
                 if (times === 2) {
-                  console.log('done 2:', res)
                   assert.deepEqual(res, {
                     retcode: 0,
                     msg: 'OK',
@@ -115,8 +111,6 @@ describe('Request', function () {
             constructor (url, options) {
               super(url, options);
               this.plugin('get', () => {
-                console.log('this.plugin.get=======')
-                console.log(this.options);
                 const options = {
                   url: this.options.url,
                   path: `${this.options.pathname}?${this.options.query}`
@@ -124,9 +118,10 @@ describe('Request', function () {
                 const req = HTTP.request(options, (resp) => {
                   resp.on('data', (chunk) => {
                     let res = JSON.parse(chunk.toString('utf8'))
-                    console.log('resp.on(=======)', res)
-                    window.localStorage.setItem('root', res.res)
-                    console.log('res:',res)
+                    window.localStorage.setItem('root', JSON.stringify({
+                      'timestamp': Date.now(),
+                      'res': res.res
+                    }))
                   })
                 });
                 req.end()
@@ -134,22 +129,69 @@ describe('Request', function () {
             }
           }
           it('a.第一次请求，没有缓存应该为Null，但是请求仍然发出', function (done) {
-            const aa = new BB('localhost', {pathname: '/root', query: 'id=1'})
-            aa
+            const bb = new BB('localhost', {pathname: '/root', query: 'id=1'})
+            bb
               .get({lazy: true})
               .done(res => {
-                console.log('aa lazy res:', res)
                 assert.equal(res, null)
                 done()
               })
           })
           it('b.第二次请求有缓存，因此返回的数据是第一次发出，但未接收的数据', function (done) {
-            const aaHasCache = new BB('localhost', {pathname: '/root', query: 'id=2'})
-            aaHasCache
+            const bbHasCache = new BB('localhost', {pathname: '/root', query: 'id=2'})
+            bbHasCache
               .get({lazy: true})
               .done(res => {
-                console.log('aaHasCache lazy res:', res)
-                assert.equal(res, 'root1 resp')
+                assert.equal(res.res, 'root1 resp')
+                window.localStorage.clear()
+                done()
+              })
+          })
+        })
+
+        describe('3.maxAge策略， 限定时间内，使用缓存数据，超过限定时间，发请求 ', function () {
+          class CC extends Request {
+            constructor (url, options) {
+              super(url, options);
+              this.plugin('get', () => {
+                const options = {
+                  url: this.options.url,
+                  path: `${this.options.pathname}?${this.options.query}`
+                }
+                const req = HTTP.request(options, (resp) => {
+                  resp.on('data', (chunk) => {
+                    let res = JSON.parse(chunk.toString('utf8'))
+                    window.localStorage.setItem('root', JSON.stringify({
+                      'timestamp': Date.now(),
+                      'res': res.res
+                    }))
+                    this.resolve(res)
+                  })
+                });
+                req.end()
+              })
+            }
+          }
+
+          it('a.数据存续小于maxAge, 使用缓存数据，不发送请求', function (done) {
+            window.localStorage.setItem('root', JSON.stringify({
+              'timestamp': Date.now(),
+              'res': 'init value'
+            }))
+            const cc = new CC('localhost', {pathname: '/root', query: 'id=1'})
+            cc
+              .get({maxAge: 10000})
+              .done(res => {
+                assert.equal(res.res, 'init value')
+                done()
+              })
+          })
+          it('b.第二次请求有缓存，因此返回的数据是第一次发出，但未接收的数据', function (done) {
+            const ccHasCache = new CC('localhost', {pathname: '/root', query: 'id=2'})
+            ccHasCache
+              .get({maxAge: 100})
+              .done(res => {
+                assert.equal(res.res, 'root2 should be updated')
                 done()
               })
           })
