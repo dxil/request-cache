@@ -233,7 +233,7 @@ describe('Request', function () {
         constructor (url, options) {
           super(url, options)
           this.plugin('post', () => {
-            console.log(this.options)
+            console.log('options',this.options)
             const postData = qs.stringify(this.options.data)
             const postOptions = {
               url: this.options.url,
@@ -246,6 +246,7 @@ describe('Request', function () {
             }
             const req = HTTP.request(postOptions, (res) => {
               req.on('data', (chunk) => {
+                console.log('data:',chunk.toString('utf8'))
                 const resObj = JSON.parse(chunk.toString('utf8'))
                 if (resObj.retcode === 0) {
                   this.resolve(resObj)

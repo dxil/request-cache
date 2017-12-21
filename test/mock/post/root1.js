@@ -3,8 +3,9 @@ const qs = require('querystring')
 module.exports = function (req, res) {
   req.on('data', (chunk) => {
     const body = qs.parse(chunk.toString('utf8'))
+    console.log(body)
     if (body.key && body.sentence) {
-      res.send(JSON.stringify({
+      res.end(JSON.stringify({
         retcode: 0,
         msg: 'OK',
         res: 'post root1 resp'
