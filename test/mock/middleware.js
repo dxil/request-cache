@@ -12,6 +12,8 @@ function mockFactor (config) {
         const processor = require(`./${method}${urlObj.pathname}${distNume}`);
         processor(req, res)
       }catch (e) {
+        const processor = require('./notFoundHandler')
+        processor(req, res)
         next()
       }
     }else {
