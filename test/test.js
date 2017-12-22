@@ -245,7 +245,7 @@ describe('Request', function () {
               method: this.options.method
             }
             const req = HTTP.request(postOptions, (res) => {
-              req.on('data', (chunk) => {
+              res.on('data', (chunk) => {
                 console.log('data:',chunk.toString('utf8'))
                 const resObj = JSON.parse(chunk.toString('utf8'))
                 if (resObj.retcode === 0) {

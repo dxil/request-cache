@@ -3,7 +3,7 @@ const qs = require('querystring')
 module.exports = function (req, res) {
   req.on('data', (chunk) => {
     const body = qs.parse(chunk.toString('utf8'))
-    console.log(body)
+    console.log('body', body)
     if (body.key && body.sentence) {
       res.end(JSON.stringify({
         retcode: 0,
