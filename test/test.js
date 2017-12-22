@@ -317,6 +317,37 @@ describe('Request', function () {
       })
     });
 
+    describe('jsonp请求', function () {
+      class Jsonp extends Request{
+        constructor (url, options) {
+          super(url, options);
+
+          this.plugin('url', () => {
+            return `./${this.options.pathname}?${this.options.query}`
+          })
+        }
+      }
+
+      it('retcode 为 0，请求成功', function (done) {
+        const jsp = new Jsonp('localhost', {pathname: '/jsonp', query: 'callback=cors'});
+        window.cors = function (data) {
+          if (data.retcode === 0) {
+            jsp.resolve(data)
+          }
+        };
+        jsp
+          .jsonp()
+          .done(res => {
+            assert.deepEqual(res, {
+              retcode: 0,
+              msg: 'OK',
+              res: 'cors response here'
+            });
+            done()
+          })
+      })
+    })
+
     describe('边界处理及异常捕获', function () {
       class TestErr extends Request {
         constructor (url, options) {
@@ -357,35 +388,5 @@ describe('Request', function () {
       })
     });
 
-    describe('jsonp请求', function () {
-      class Jsonp extends Request{
-        constructor (url, options) {
-          super(url, options);
-
-          this.plugin('url', () => {
-            return `./${this.options.pathname}?${this.options.query}`
-          })
-        }
-      }
-
-      it('retcode 为 0，请求成功', function (done) {
-        const jsp = new Jsonp('localhost', {pathname: '/jsonp', query: 'callback=cors'});
-        window.cors = function (data) {
-          if (data.retcode === 0) {
-            jsp.resolve(data)
-          }
-        };
-        jsp
-          .jsonp()
-          .done(res => {
-            assert.deepEqual(res, {
-              retcode: 0,
-              msg: 'OK',
-              res: 'cors response here'
-            });
-            done()
-          })
-      })
-    })
   })
 });
