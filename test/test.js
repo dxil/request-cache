@@ -317,5 +317,46 @@ describe('Request', function () {
           })
       })
     })
+
+    describe('边界处理及异常捕获', function () {
+      class TestErr extends Request {
+        constructor (url, options) {
+          super(url, options);
+          this.plugin('get', () => {
+            const options = {
+              url: this.options.url,
+              path: `${this.options.pathname}?${this.options.query}`
+            }
+            const req = HTTP.request(options, (resp) => {
+              resp.on('data', (chunk) => {
+                let res = JSON.parse(chunk.toString('utf8'))
+                this.resolve(res)
+              })
+            });
+            req.end()
+          })
+        }
+      }
+
+      it('should catch error', function (done) {
+        const err1 = new TestErr('localhost', {pathname: '/root', query: 'id=1'})
+        err1
+          .get()
+          .done(res => {
+            // reference err should be caught
+            ddd
+            done()
+          })
+          .fail(e => {
+            done()
+          })
+          .catch(exception => {
+            console.log('exception err:',exception.toString())
+            assert.notEqual(exception, null)
+            assert.equal(exception.toString(), 'ReferenceError: ddd is not defined')
+            done()
+          })
+      })
+    })
   })
 });
