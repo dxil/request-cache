@@ -280,11 +280,42 @@ describe('Request', function () {
             done()
           })
       })
+
       // why fail
       // retcode === 1 登录态丢失
       // retcode === 2 客户端请求错误，打印错误msg
-      // retcode === 3 服务器请求错误，打印错误msg
+      // retcode === 3 服务器请求错误，打印错误msg 无法模拟
+      it('客户端错误引起的POST请求失败， retcode === 2', function (done) {
+        const aa400 = new MyPost('localhost', {pathname: '/root', query: 'id=1'})
+        const aa404 = new MyPost('localhost', {pathname: '/root', query: 'id=2'})
+        aa400
+          .post({'data': {'key': 'abc'}})
+          .done(res => {
+            done()
+          })
+          .fail(e => {
+            assert.deepEqual(e, {
+              retcode: 2,
+              msg: '400 invalid request, please check your post data',
+              res: null
+            })
+            done()
+          })
 
+        aa404
+          .post({'data': {'key': 'abc', 'sentence': 'hello world!'}})
+          .done(res => {
+            done()
+          })
+          .fail(e => {
+            assert.deepEqual(e, {
+              retcode: 2,
+              msg: '404 not found, please check your url',
+              res: null
+            })
+            done()
+          })
+      })
     })
   })
 });
